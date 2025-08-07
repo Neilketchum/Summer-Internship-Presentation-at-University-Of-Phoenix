@@ -217,7 +217,7 @@
             </div>
         </div>
 
-        <!-- Slide 7: Migration Process -->
+        <!-- Slide 5: Migration Process -->
         <div class="slide" data-slide="5">
             <div class="slide-content">
                 <h2 class="slide-title">Complete Migration Process</h2>
@@ -350,17 +350,15 @@ public String health() throws UnknownHostException {
                             <div class="step-toggle">▼</div>
                     </div>
                         <div class="step-description">
-                            <p>Setup of environment-specific configurations for development, staging, and production. Includes environment variables, configuration files, and deployment parameters.</p>
+                            <p>Setup of environment-specific (present for EEC just make it for AWS) configurations for development, staging, and production. Includes environment variables, configuration files, and deployment parameters.</p>
                             <div class="step-details">
+                                <p><strong>✅ Add new configuration directory in <code>&lt;module_key&gt;.config</code></strong></p>
                                 <p><strong>✅ Files:</strong></p>
                                 <ul>
-                                    <li><code>values-st.yaml</code></li>
-                                    <li><code>values-prod.yaml</code></li>
+                                    <li><code>csas-tc.jks.aws_dev</code></li>
+                                    <li><code>csas-tc.jks.aws_prod</code></li>
+                                    <li><code>csas-tc.jks.aws_systest</code></li>
                                 </ul>
-                                <p><strong>✅ Example values:</strong></p>
-                                <pre><code>APPKEY: pay247cppcommon
-financials.sslcertfile: /usr/local/tomcat/certs/ssl.crt
-financials.url: jdbc:oracle:thin:@r122uatdb.qaapollogrp.edu:1532/FINDB</code></pre>
                                 <p><strong>✅ Ensure <code>TOMCAT_APP_HOME</code> is <code>/opt/tomcat/default</code>.</strong></p>
                             </div>
                         </div>
@@ -399,25 +397,14 @@ resource "aws_secretsmanager_secret" "promocodews_secret" {
                         <div class="step-header">
                         <div class="step-check">✅</div>
                         <div class="step-number">6</div>
-                        <h4>CI/CD Setup</h4>
+                        <h4>Create SpaceLift Stack</h4>
                             <div class="step-toggle">▼</div>
                     </div>
                         <div class="step-description">
-                            <p>Implementation of continuous integration and deployment pipeline using tools like Jenkins, GitHub Actions, or AWS CodePipeline. Automated build, test, and deployment processes.</p>
+                            <p>This step was not needed as a pipeline already existed for the EEC service being migrated to AWS</p>
                             <div class="step-details">
                                 <p><strong>✅ Spacelift Stack:</strong> One per service</p>
                                 <p><strong>✅ Bitbucket Repo:</strong> <code>integration.pay247cppcommon.git</code>, <code>integration.promocodews.git</code></p>
-                                <p><strong>✅ pom.xml:</strong></p>
-                                <pre><code>&lt;profile&gt;
-  &lt;id&gt;commit&lt;/id&gt;
-  &lt;plugin&gt;
-    &lt;artifactId&gt;maven-release-plugin&lt;/artifactId&gt;
-    &lt;version&gt;2.4.1&lt;/version&gt;
-    &lt;configuration&gt;
-      &lt;tagBase&gt;git@bitbucket.org:codeuopx/integration.pay247cppcommon.git&lt;/tagBase&gt;
-    &lt;/configuration&gt;
-  &lt;/plugin&gt;
-&lt;/profile&gt;</code></pre>
                             </div>
                         </div>
                     </div>
@@ -448,9 +435,9 @@ resource "aws_secretsmanager_secret" "promocodews_secret" {
                             <div class="step-toggle">▼</div>
                     </div>
                         <div class="step-description">
-                            <p>Creation and configuration of Kubernetes namespaces for organizing and isolating application resources. Setup of resource quotas and network policies.</p>
+                            <p>Creation and configuration of Kubernetes namespaces by cloning reposiory kubernetes-gp-us-east-1-namespaces</p>
                             <div class="step-details">
-                                <p><strong>✅ Use <code>fsp.yaml</code> from <code>namespaces/</code>.</strong></p>
+                                <p><strong>✅ Use <code>fsp.yaml</code> from <code>namespaces/</code>.</strong> Create SA account and attach FSP role  role: fsp_role  service_account: pay247_cppcommon-sa</p>
                                 <p><strong>✅ Submit PRs:</strong></p>
                                 <ul>
                                     <li>ST → <code>nonprod-st</code></li>
@@ -469,9 +456,8 @@ resource "aws_secretsmanager_secret" "promocodews_secret" {
                         <div class="step-description">
                             <p>Infrastructure as Code implementation using Terraform. Automated provisioning of EKS clusters, networking, and supporting infrastructure components.</p>
                             <div class="step-details">
-                                <p><strong>✅ Add to:</strong></p>
+                                <p><strong>✅ Add : the created SA account to the terraform pipeline</strong></p>
                                 <ul>
-                                    <li><code>fsp-eks-secrets-terraform/secrets.tf</code></li>
                                     <li><code>aws-infosec-nonprod-terraform</code></li>
                                     <li><code>aws-infosec-prod-terraform</code></li>
                                 </ul>
@@ -487,11 +473,14 @@ resource "aws_secretsmanager_secret" "promocodews_secret" {
                             <div class="step-toggle">▼</div>
                     </div>
                         <div class="step-description">
-                            <p>Creation and customization of Helm charts for application deployment. Package management for Kubernetes with templating and version control.</p>
+                            <p>Creation and customization of Helm charts for application deployment. Package management for Kubernetes with templating and version control. This helps us have a common deployment process for all environments.</p>
                             <div class="step-details">
                                 <p><strong>✅ Chart.yaml:</strong></p>
                                 <pre><code>appVersion: 1.0.0-SNAPSHOT</code></pre>
                                 <p><strong>✅ values.yaml:</strong></p>
+                                <p><strong>✅ values.st.yaml:</strong></p>
+                                <p><strong>✅ values.dev.yaml:</strong></p>
+                                <p><strong>✅ values.prod.yaml:</strong></p>
                                 <pre><code>APPKEY: pay247cppcommon
 readinessProbe:
   path: /pay247cppcommon/health</code></pre>
@@ -511,7 +500,7 @@ readinessProbe:
                             <div class="step-toggle">▼</div>
                     </div>
                         <div class="step-description">
-                            <p>Initial deployment of the containerized application to EKS cluster. Verification of pod status, service connectivity, and application functionality.</p>
+                            <p>Initial deployment of the containerized application to EKS cluster using AWS CodePipeline. Verification of pod status.</p>
                             <div class="step-details">
                                 <pre><code>helm upgrade --install pay247cppcommon ./pay247cppcommon-helm -f values-st.yaml
 helm upgrade --install promocodews ./promocodews-helm -f values-st.yaml</code></pre>
@@ -529,16 +518,11 @@ helm upgrade --install promocodews ./promocodews-helm -f values-st.yaml</code></
                         <div class="step-description">
                             <p>Comprehensive testing of the deployed application including functional tests, load tests, and integration tests. Validation of all business requirements and performance metrics.</p>
                             <div class="step-details">
-                                <p><strong>✅ Use SQL Developer:</strong></p>
-                                <ul>
-                                    <li>Connect using <code>financials.url</code></li>
-                                    <li>Validate with username/password</li>
-                                </ul>
                                 <p><strong>✅ Run:</strong></p>
                                 <ul>
-                                    <li>Functional API/UI tests</li>
-                                    <li>Smoke/load testing tools</li>
-                                    <li>Check logs for <code>sslcertfile</code> errors</li>
+                                    <li>Health Endpoint Validation</li>
+                                    <li>Buisness Validation By BA</li>
+                                    <li>Check logs at <code>new relics</code> </li>
                                 </ul>
                             </div>
                         </div>
@@ -551,13 +535,11 @@ helm upgrade --install promocodews ./promocodews-helm -f values-st.yaml</code></
                             <div class="step-toggle">▼</div>
                     </div>
                         <div class="step-description">
-                            <p>Implementation of monitoring, logging, and alerting systems. Integration with tools like CloudWatch, Prometheus, and Grafana for comprehensive observability.</p>
+                            <p>Implementation of monitoring, logging, and alerting systems. Integration with tools like Code build and New Relic.</p>
                             <div class="step-details">
                                 <p><strong>✅ Integrate:</strong></p>
                                 <ul>
-                                    <li>CloudWatch logging</li>
-                                    <li>Prometheus metrics</li>
-                                    <li>Grafana dashboards</li>
+                                    <li>New Relic</li>
                                 </ul>
                                 <p><strong>✅ Set alerts for:</strong></p>
                                 <ul>
@@ -576,20 +558,13 @@ helm upgrade --install promocodews ./promocodews-helm -f values-st.yaml</code></
                             <div class="step-toggle">▼</div>
                         </div>
                         <div class="step-description">
-                            <p>Configuration of service routing via Istio gateways and F5 path-based routing.</p>
+                            <p>Routing traffic to EKS cluster VIA the VIP.</p>
                             <div class="step-details">
-                                <p><strong>✅ In <code>virtual_service.yaml</code>:</strong></p>
-                                <pre><code>hosts:
-  - pay247cppcommon.internal.apollogrp.edu
-  - promocodews.internal.apollogrp.edu
-http:
-  - match:
-      - uri:
-          prefix: /pay247cppcommon
-  - match:
-      - uri:
-          prefix: /promocodews</code></pre>
-                                <p><strong>✅ Validate route hits via browser or Curl.</strong></p>
+                            
+                                hosts:
+                                - We need to point our VIP to the EKS cluster via the hosts present in the helm repo for both ST and Production Environments.
+
+                                <p><strong>✅ Validate new DNS and by calling the Health Endpoint via Curl and then take help from BA team to run Buisness Validations </strong></p>
                             </div>
                         </div>
                     </div>
